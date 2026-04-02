@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Weekend ✈︎ 4–7 April</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --ink: #1C1A17;
+    --muted: #7A756C;
+    --gold: #C9993A;
+    --gold-light: #F0DEB0;
+    --rose: #C4695B;
+    --sage: #5A7A62;
+    --sky: #4A7BA8;
+    --border: rgba(28,26,23,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    padding: 72px 24px 56px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(201,153,58,0.13) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 50% at 80% 80%, rgba(196,105,91,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 8vw, 68px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 14px;
+  }
+  .hero h1 span { font-style: italic; color: var(--rose); }
+  .hero-sub {
+    font-size: 15px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 40px;
+  }
+  .plane-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--gold);
+    font-size: 20px;
+  }
+  .plane-divider::before, .plane-divider::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold));
+  }
+  .plane-divider::after { background: linear-gradient(to left, transparent, var(--gold)); }
+
+  /* ── NAV PILLS ── */
+  .day-nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 24px 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+  }
+  .day-pill {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    padding: 7px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .day-pill:hover { border-color: var(--gold); color: var(--gold); }
+  .day-pill.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--cream);
+  }
+
+  /* ── CONTENT ── */
+  .content { max-width: 700px; margin: 0 auto; padding: 48px 20px 80px; }
+
+  /* ── DAY SECTION ── */
+  .day-section {
+    display: none;
+    animation: fadeUp 0.4s ease both;
+  }
+  .day-section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .day-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .day-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--gold-light);
+    flex-shrink: 0;
+    min-width: 64px;
+  }
+  .day-info { padding-top: 6px; }
+  .day-info h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .day-info h2 em { font-style: italic; color: var(--muted); font-weight: 400; }
+  .day-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-top: 6px;
+  }
+  .badge-arrival { background: rgba(74,123,168,0.12); color: var(--sky); }
+  .badge-daytrip { background: rgba(90,122,98,0.12); color: var(--sage); }
+  .badge-explore { background: rgba(196,105,91,0.12); color: var(--rose); }
+  .badge-farewell { background: rgba(201,153,58,0.12); color: var(--gold); }
+
+  /* ── EVENTS ── */
+  .events { display: flex; flex-direction: column; gap: 0; }
+  .event {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0 16px;
+    position: relative;
+    padding: 14px 0;
+  }
+  .event:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 27px;
+    top: 44px;
+    bottom: -4px;
+    width: 1px;
+    background: var(--border);
+  }
+  .event-time {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    padding-top: 2px;
+    text-align: right;
+    grid-row: 1;
+  }
+  .event-dot {
+    grid-column: 1;
+    grid-row: 1;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 2px solid var(--border);
+    margin: 5px auto 0;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.2s;
+  }
+  .event:hover .event-dot { border-color: var(--gold); }
+  .event-body { grid-column: 2; }
+  .event-title {
+    font-size: 15px;
+    font-weight: 400;
+    margin-bottom: 2px;
+  }
+  .event-note {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .event-cost {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    background: rgba(201,153,58,0.1);
+    color: var(--gold);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-top: 4px;
+  }
+
+  /* Special highlight events */
+  .event.highlight .event-dot {
+    background: var(--gold);
+    border-color: var(--gold);
+    width: 12px;
+    height: 12px;
+    margin: 4px auto 0;
+  }
+  .event.highlight .event-title { font-weight: 500; }
+
+  /* ── SECTION DIVIDER ── */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* ── BUDGET CARD ── */
+  .budget-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-top: 48px;
+    background: white;
+  }
+  .budget-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  .budget-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .budget-row:last-of-type { border-bottom: none; }
+  .budget-row .label { color: var(--muted); }
+  .budget-row .amount { font-weight: 500; }
+  .budget-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0 0;
+    margin-top: 4px;
+    border-top: 1.5px solid var(--ink);
+  }
+  .budget-total .label { font-weight: 500; font-size: 15px; }
+  .budget-total .amount { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+  .budget-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+  }
+  .budget-buffer {
+    display: inline-block;
+    background: rgba(90,122,98,0.12);
+    color: var(--sage);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+
+  /* ── FOOTER NOTE ── */
+  .footer-note {
+    text-align: center;
+    margin-top: 64px;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--muted);
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-note span { color: var(--rose); }
+
+  /* ── PHOTO STRIP ── */
+  .photo-strip {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .photo-strip.cols-2 { grid-template-columns: 1fr 1fr; }
+  .photo-strip.cols-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+  .photo-strip img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+    background: var(--gold-light);
+  }
+  .photo-strip.cols-3 img:first-child { grid-row: 1 / 3; height: 100%; min-height: 180px; }
+  .photo-strip.cols-3 img:not(:first-child) { height: 110px; }
+  .photo-caption {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-align: center;
+    margin-bottom: 28px;
+    margin-top: -4px;
+    font-style: italic;
+  }
+
+  /* ── MAP ── */
+  #map-container {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+  #the-map { height: 380px; width: 100%; }
+  .map-pins {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .map-pin-btn {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .map-pin-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .map-pin-btn.active { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+  .map-pin-btn .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 480px) {
+    .hero { padding: 52px 16px 40px; }
+    .day-number { font-size: 48px; }
+    .budget-card { padding: 20px; }
+    .photo-strip.cols-3 { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .photo-strip.cols-3 img:first-child { grid-row: auto; height: 140px; }
+    .photo-strip img { height: 140px; }
+    .photo-strip.cols-3 img:not(:first-child) { height: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <p class="hero-eyebrow">A little something for you</p>
+  <h1>Our <span>Weekend</span><br>Together</h1>
+  <p class="hero-sub">4th – 7th April &nbsp;·&nbsp; Manchester &amp; Beyond</p>
+  <div class="plane-divider">✈︎</div>
+</header>
+
+<nav class="day-nav">
+  <button class="day-pill active" onclick="showDay('fri', this)">Friday</button>
+  <button class="day-pill" onclick="showDay('sat', this)">Saturday</button>
+  <button class="day-pill" onclick="showDay('sun', this)">Sunday</button>
+  <button class="day-pill" onclick="showDay('mon', this)">Monday</button>
+  <button class="day-pill" onclick="showDay('map', this)">Map</button>
+</nav>
+
+<main class="content">
+
+  <!-- FRIDAY -->
+  <section class="day-section active" id="day-fri">
+    <div class="day-header">
+      <div class="day-number">04</div>
+      <div class="day-info">
+        <h2>Arrival Day <em>/ Friday</em></h2>
+        <span class="day-badge badge-arrival">Arrival</span>
+      </div>
+    </div>
+    <div class="photo-strip cols-2" id="photos-fri"></div>
+    <p class="photo-caption" id="cap-fri"></p>
+    <div class="events">
+      <div class="event">
+        <span class="event-time">16:15</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Check in at Cork Airport</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">17:15</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Board flight to Manchester</p>
+          <p class="event-note">Cork → Manchester</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">18:15</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Land at Manchester Airport ✈︎</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">18:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Picked up 🙂</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">19:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Check in — Holiday Inn Express Manchester Airport</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">19:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Easy dinner nearby</p>
+          <p class="event-note">Nothing too ambitious — just nice to be together</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SATURDAY -->
+  <section class="day-section" id="day-sat">
+    <div class="day-header">
+      <div class="day-number">05</div>
+      <div class="day-info">
+        <h2>York <em>/ Saturday</em></h2>
+        <span class="day-badge badge-daytrip">Day Trip</span>
+      </div>
+    </div>
+    <div class="photo-strip cols-3" id="photos-sat"></div>
+    <p class="photo-caption" id="cap-sat"></p>
+    <div class="events">
+      <div class="event">
+        <span class="event-time">09:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Leave Woodford</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">10:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Arrive York</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">10:45</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">York Minster</p>
+          <p class="event-note">One of the finest Gothic cathedrals in Northern Europe</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">12:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Walk The Shambles</p>
+          <p class="event-note">Medieval street — one of the oldest in England</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">13:15</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Lunch in York</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">14:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Clifford's Tower</p>
+          <p class="event-note">13th century keep — panoramic views over the city</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">15:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Walk the City Walls</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">16:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Hickory's Smokehouse — dinner</p>
+          <p class="event-note">American BBQ &amp; cocktails in York</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">19:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Head back to Manchester</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">20:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Arrive back</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUNDAY -->
+  <section class="day-section" id="day-sun">
+    <div class="day-header">
+      <div class="day-number">06</div>
+      <div class="day-info">
+        <h2>Chester <em>/ Sunday</em></h2>
+        <span class="day-badge badge-explore">Explore</span>
+      </div>
+    </div>
+    <div class="photo-strip cols-3" id="photos-sun"></div>
+    <p class="photo-caption" id="cap-sun"></p>
+    <div class="events">
+      <div class="event">
+        <span class="event-time">09:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Leave Woodford</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">10:15</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Arrive Chester</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">10:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Chester Cathedral</p>
+          <p class="event-note">Stunning medieval abbey — admission is free</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">11:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Walk the Roman City Walls</p>
+          <p class="event-note">The most complete Roman walls in Britain</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">13:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Explore The Rows &amp; lunch</p>
+          <p class="event-note">Unique two-level medieval shopping galleries</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">14:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Wander the city centre</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">16:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Head back to Woodford</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">19:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Dinner — relaxed evening</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MONDAY -->
+  <section class="day-section" id="day-mon">
+    <div class="day-header">
+      <div class="day-number">07</div>
+      <div class="day-info">
+        <h2>Quarry Bank &amp; Departure <em>/ Monday</em></h2>
+        <span class="day-badge badge-farewell">Farewell Day</span>
+      </div>
+    </div>
+    <div class="photo-strip cols-2" id="photos-mon"></div>
+    <p class="photo-caption" id="cap-mon"></p>
+    <div class="events">
+      <div class="event highlight">
+        <span class="event-time">13:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Quarry Bank Mill, Styal</p>
+          <p class="event-note">National Trust — Georgian cotton mill in a wooded valley</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">13:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Head back — lunch</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">15:00</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Relaxed afternoon &amp; pack up</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">17:15</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Leave for Manchester Airport</p>
+        </div>
+      </div>
+      <div class="event">
+        <span class="event-time">17:30</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Arrive airport — drop off</p>
+        </div>
+      </div>
+      <div class="event highlight">
+        <span class="event-time">19:25</span>
+        <div class="event-dot"></div>
+        <div class="event-body">
+          <p class="event-title">Flight departs for Cork ✈︎</p>
+          <p class="event-note">Until next time</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- MAP -->
+  <section class="day-section" id="day-map">
+    <div class="day-header">
+      <div class="day-number" style="font-size:52px; padding-top:4px;">↟</div>
+      <div class="day-info">
+        <h2>The Weekend <em>/ Map</em></h2>
+        <span class="day-badge badge-daytrip">All stops</span>
+      </div>
+    </div>
+
+    <div class="map-pins" id="map-filter">
+      <button class="map-pin-btn active" onclick="filterMap('all', this)"><span class="dot" style="background:#C9993A"></span>All</button>
+      <button class="map-pin-btn" onclick="filterMap('fri', this)"><span class="dot" style="background:#4A7BA8"></span>Friday</button>
+      <button class="map-pin-btn" onclick="filterMap('sat', this)"><span class="dot" style="background:#5A7A62"></span>Saturday</button>
+      <button class="map-pin-btn" onclick="filterMap('sun', this)"><span class="dot" style="background:#C4695B"></span>Sunday</button>
+      <button class="map-pin-btn" onclick="filterMap('mon', this)"><span class="dot" style="background:#C9993A"></span>Monday</button>
+    </div>
+
+    <div id="map-container">
+      <div id="the-map"></div>
+    </div>
+  </section>
+
+  <p class="footer-note">Can't wait to have you here. <span>♡</span></p>
+
+</main>
+
+<script>
+  function showDay(key, btn) {
+    document.querySelectorAll('.day-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+    document.getElementById('day-' + key).classList.add('active');
+    if (btn) btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (key === 'map') {
+      setTimeout(() => {
+        initMap();
+        if (leafletMap) {
+          leafletMap.invalidateSize();
+          fitToVisible();
+        }
+      }, 150);
+    }
+  }
+
+  // Wikipedia page image API — fetches the representative thumbnail for each article
+  async function getWikiImage(title, width = 800) {
+    try {
+      const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=pageimages&piprop=thumbnail&pithumbsize=${width}&format=json&origin=*`;
+      const r = await fetch(url);
+      const d = await r.json();
+      const pages = d.query.pages;
+      const page = pages[Object.keys(pages)[0]];
+      return page.thumbnail ? page.thumbnail.source : null;
+    } catch { return null; }
+  }
+
+  function makeImg(src, alt) {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = alt;
+    img.onerror = () => img.style.display = 'none';
+    return img;
+  }
+
+  async function loadPhotos() {
+    // Friday — Manchester Airport + hotel
+    const friFetch = [
+      getWikiImage('Manchester Airport', 800),
+      getWikiImage('Manchester worker bee', 800)
+    ];
+    const [manc1, manc2] = await Promise.all(friFetch);
+    const frStrip = document.getElementById('photos-fri');
+    const frCap = document.getElementById('cap-fri');
+    if (manc1) frStrip.appendChild(makeImg(manc1, 'Manchester Airport'));
+    if (manc2) frStrip.appendChild(makeImg(manc2, 'Manchester Worker Bee'));
+    if (manc1 || manc2) frCap.textContent = 'Manchester Airport · The Manchester Bee';
+
+    // Saturday — York (3 images)
+    const satFetch = [
+      getWikiImage('The Shambles, York', 800),
+      getWikiImage("Clifford's Tower", 800),
+      getWikiImage('York Minster', 800)
+    ];
+    const [sham, cliff, minster] = await Promise.all(satFetch);
+    const satStrip = document.getElementById('photos-sat');
+    const satCap = document.getElementById('cap-sat');
+    const satImgs = [[sham,'The Shambles'],[cliff,"Clifford's Tower"],[minster,'York Minster']].filter(x=>x[0]);
+    satImgs.forEach(([src, alt]) => satStrip.appendChild(makeImg(src, alt)));
+    if (satImgs.length) satCap.textContent = 'The Shambles · Clifford\'s Tower · York Minster';
+
+    // Sunday — Chester (3 images)
+    const sunFetch = [
+      getWikiImage('Chester Cathedral', 800),
+      getWikiImage('Chester city walls', 800),
+      getWikiImage('The Rows, Chester', 800)
+    ];
+    const [cath, walls, rows] = await Promise.all(sunFetch);
+    const sunStrip = document.getElementById('photos-sun');
+    const sunCap = document.getElementById('cap-sun');
+    const sunImgs = [[cath,'Chester Cathedral'],[walls,'Chester city walls'],[rows,'The Rows']].filter(x=>x[0]);
+    sunImgs.forEach(([src, alt]) => sunStrip.appendChild(makeImg(src, alt)));
+    if (sunImgs.length) sunCap.textContent = 'Chester Cathedral · Roman Walls · The Rows';
+
+    // Monday — Quarry Bank
+    const monFetch = [
+      getWikiImage('Quarry Bank Mill', 800),
+      getWikiImage('Styal, Cheshire', 800)
+    ];
+    const [qb1, qb2] = await Promise.all(monFetch);
+    const monStrip = document.getElementById('photos-mon');
+    const monCap = document.getElementById('cap-mon');
+    if (qb1) monStrip.appendChild(makeImg(qb1, 'Quarry Bank Mill'));
+    if (qb2) monStrip.appendChild(makeImg(qb2, 'Styal'));
+    if (qb1 || qb2) monCap.textContent = 'Quarry Bank Mill, Styal — a perfect last morning';
+  }
+
+  loadPhotos();
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // ── MAP DATA ──
+  const places = [
+    { day: 'fri', label: 'Manchester Airport',     lat: 53.3537, lng: -2.2750, color: '#4A7BA8', note: 'Friday — arrival ✈︎' },
+    { day: 'fri', label: 'Holiday Inn Express Manchester Airport', lat: 53.362611371085016, lng: -2.293875543355863, color: '#4A7BA8', note: 'Friday — checking in here 🏨' },
+    { day: 'fri', label: 'Poynton',                  lat: 53.3553, lng: -2.1173, color: '#4A7BA8', note: 'Friday — come find me at work 🙂' },
+    { day: 'sat', label: 'York Minster',            lat: 53.9620, lng: -1.0819, color: '#5A7A62', note: 'Saturday — Gothic cathedral' },
+    { day: 'sat', label: 'The Shambles',            lat: 53.9598, lng: -1.0799, color: '#5A7A62', note: 'Saturday — medieval street' },
+    { day: 'sat', label: "Clifford's Tower",        lat: 53.9580, lng: -1.0789, color: '#5A7A62', note: 'Saturday — 13th century keep' },
+    { day: 'sat', label: "Hickory's Smokehouse York", lat: 53.9569, lng: -1.0858, color: '#5A7A62', note: 'Saturday — dinner' },
+    { day: 'sun', label: 'Chester Cathedral',       lat: 53.1926, lng: -2.8921, color: '#C4695B', note: 'Sunday — stunning medieval abbey' },
+    { day: 'sun', label: 'Chester Roman Walls',     lat: 53.1930, lng: -2.8900, color: '#C4695B', note: 'Sunday — most complete Roman walls in Britain' },
+    { day: 'sun', label: 'The Rows, Chester',       lat: 53.1919, lng: -2.8916, color: '#C4695B', note: 'Sunday — medieval shopping galleries' },
+    { day: 'mon', label: 'Quarry Bank Mill, Styal', lat: 53.34358837229057, lng: -2.2501795884601465, color: '#C9993A', note: 'Monday — National Trust mill' },
+  ];
+
+  let leafletMap = null;
+  let allMarkers = [];
+  let currentFilter = 'all';
+
+  function makeIcon(color) {
+    return L.divIcon({
+      className: '',
+      html: `<div style="
+        width:14px;height:14px;border-radius:50%;
+        background:${color};border:2.5px solid #fff;
+        box-shadow:0 1px 4px rgba(0,0,0,0.25);
+      "></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+      popupAnchor: [0, -10]
+    });
+  }
+
+  function initMap() {
+    if (leafletMap) return;
+    leafletMap = L.map('the-map', { zoomControl: true, scrollWheelZoom: false });
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '© <a href="https://www.esri.com/">Esri</a>',
+      maxZoom: 19
+    }).addTo(leafletMap);
+
+    places.forEach(p => {
+      const marker = L.marker([p.lat, p.lng], { icon: makeIcon(p.color) })
+        .addTo(leafletMap)
+        .bindPopup(`<strong style="font-family:sans-serif;font-size:13px">${p.label}</strong><br><span style="font-size:11px;color:#7A756C">${p.note}</span>`);
+      marker._dayTag = p.day;
+      allMarkers.push(marker);
+    });
+
+    fitToVisible();
+  }
+
+  function fitToVisible() {
+    const visible = allMarkers.filter(m => leafletMap.hasLayer(m));
+    if (!visible.length) return;
+    const group = L.featureGroup(visible);
+    leafletMap.fitBounds(group.getBounds().pad(0.15));
+  }
+
+  function filterMap(day, btn) {
+    currentFilter = day;
+    document.querySelectorAll('.map-pin-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    allMarkers.forEach(m => {
+      if (day === 'all' || m._dayTag === day) {
+        if (!leafletMap.hasLayer(m)) leafletMap.addLayer(m);
+      } else {
+        if (leafletMap.hasLayer(m)) leafletMap.removeLayer(m);
+      }
+    });
+    fitToVisible();
+  }
+
+  // Initialise map when tab is shown — handled inside showDay above
+</script>
+</body>
+</html>
